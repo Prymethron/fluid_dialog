@@ -50,6 +50,7 @@ class FluidDialog extends StatelessWidget {
     this.transitionCurve = Curves.easeInOutCubicEmphasized,
     this.reverseTransitionCurve = Curves.easeInOutCubicEmphasized,
     this.defaultDecoration,
+    this.viewInsetsPadding = false,
   });
 
   /// The initial page that is shown by the dialog.
@@ -103,6 +104,11 @@ class FluidDialog extends StatelessWidget {
   /// Typically a [BoxDecoration].
   final Decoration? defaultDecoration;
 
+  /// A Boolean for to decide add padding of viewInsets.
+  ///
+  /// Generally uses for add padding when keyboard shows up.
+  final bool viewInsetsPadding;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -120,42 +126,47 @@ class FluidDialog extends StatelessWidget {
               builder: (context, List<FluidDialogPage> value, child) {
                 final page = value.last;
 
-                return AnimatedAlign(
-                  duration: alignmentDuration,
-                  curve: alignmentCurve,
-                  alignment: page.alignment,
-                  child: Material(
-                    borderOnForeground: false,
-                    color: Colors.transparent,
-                    child: AnimatedContainer(
-                      duration: transitionDuration,
-                      curve: transitionCurve,
-                      decoration: page.decoration ??
-                          defaultDecoration ??
-                          BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                      child: AnimatedSize(
-                        duration: sizeDuration,
-                        curve: sizeCurve,
-                        reverseDuration: sizeDuration,
-                        child: AnimatedSwitcher(
-                          duration: transitionDuration,
-                          reverseDuration: reverseTransitionDuration,
-                          switchInCurve: transitionCurve,
-                          switchOutCurve: reverseTransitionCurve,
-                          transitionBuilder: transitionBuilder ??
-                              (child, animation) {
-                                // Use default animation
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                );
-                              },
+                return Padding(
+                  padding: viewInsetsPadding
+                      ? MediaQuery.viewInsetsOf(context)
+                      : EdgeInsets.zero,
+                  child: AnimatedAlign(
+                    duration: alignmentDuration,
+                    curve: alignmentCurve,
+                    alignment: page.alignment,
+                    child: Material(
+                      borderOnForeground: false,
+                      color: Colors.transparent,
+                      child: AnimatedContainer(
+                        duration: transitionDuration,
+                        curve: transitionCurve,
+                        decoration: page.decoration ??
+                            defaultDecoration ??
+                            BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                        child: AnimatedSize(
+                          duration: sizeDuration,
+                          curve: sizeCurve,
+                          reverseDuration: sizeDuration,
+                          child: AnimatedSwitcher(
+                            duration: transitionDuration,
+                            reverseDuration: reverseTransitionDuration,
+                            switchInCurve: transitionCurve,
+                            switchOutCurve: reverseTransitionCurve,
+                            transitionBuilder: transitionBuilder ??
+                                (child, animation) {
+                                  // Use default animation
+                                  return FadeTransition(
+                                    opacity: animation,
+                                    child: child,
+                                  );
+                                },
 
-                          // Use the current page from the DialogNavigator
-                          child: page.builder(context),
+                            // Use the current page from the DialogNavigator
+                            child: page.builder(context),
+                          ),
                         ),
                       ),
                     ),
